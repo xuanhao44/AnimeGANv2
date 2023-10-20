@@ -45,8 +45,6 @@ def post_precess(img, wh):
 
 def cvt2anime_video(video_filepath, output, model, onnx = 'model.onnx', output_format='mp4v'):  # 小写就不报错了，只是仍然无法在浏览器上播放
 
-    # 调用 onnx：https://blog.csdn.net/songpeiying/article/details/133084413
-
     # check onnx model
     exists = os.path.isfile(onnx)
     if not exists:
@@ -54,7 +52,7 @@ def cvt2anime_video(video_filepath, output, model, onnx = 'model.onnx', output_f
         return
 
     # 加载模型，若有 GPU, 则用 GPU 推理
-    # https://zhuanlan.zhihu.com/p/645720587
+    # 参考：https://zhuanlan.zhihu.com/p/645720587
     # 慎入！https://zhuanlan.zhihu.com/p/492040015
     if ort.get_device()=='GPU':
         print('use gpu')
