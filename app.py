@@ -26,12 +26,12 @@ def post_precess(img, wh):
     img = cv2.resize(img, (wh[0], wh[1]))
     return img
 
-def cvt2anime_video(video, output, checkpoint_dir, output_format='mp4v'):  # 小写就不报错了，只是仍然无法在浏览器上播放
+def cvt2anime_video(video_filepath, output, checkpoint, checkpoint_dir, output_format='mp4v'):  # 小写就不报错了，只是仍然无法在浏览器上播放
     '''
     output_format: 4-letter code that specify codec to use for specific video type. e.g. for mp4 support use "H264", "MP4V", or "X264"
     '''
-    tf.reset_default_graph()  # Python的控制台会保存上次运行结束的变量
-    
+    tf.reset_default_graph()  # Python 的控制台会保存上次运行结束的变量
+
     gpu_stat = bool(len(tf.config.experimental.list_physical_devices('GPU')))
     if gpu_stat:
         os.environ["CUDA_VISIBLE_DEVICES"] = "0"
@@ -44,8 +44,10 @@ def cvt2anime_video(video, output, checkpoint_dir, output_format='mp4v'):  # 小
     saver = tf.train.Saver()
 
     # load video
-    vid = cv2.VideoCapture(video)
-    vid_name = os.path.basename(video)
+    vid = cv2.VideoCapture(video_filepath)
+    vid_name = os.path.basename(video_filepath)  # 只取文件名
+    # https://blog.csdn.net/lsoxvxe/article/details/131999217
+    # https://pythonjishu.com/python-os-28/
     total = int(vid.get(cv2.CAP_PROP_FRAME_COUNT))
     fps = vid.get(cv2.CAP_PROP_FPS)
     width = int(vid.get(cv2.CAP_PROP_FRAME_WIDTH))
@@ -65,10 +67,15 @@ def cvt2anime_video(video, output, checkpoint_dir, output_format='mp4v'):  # 小
             print(" [*] Failed to find a checkpoint")
             return
 
-        video_out = cv2.VideoWriter(os.path.join(output, vid_name.rsplit('.', 1)[0] + "_AnimeGANv2.mp4"), codec, fps, (width, height))
+        # 输出视频名称、路径
+        video_out_name = vid_name.rsplit('.', 1)[0] + '_' + checkpoint + '.mp4'
+        video_out_path = os.path.join(output, video_out_name)
+
+        video_out = cv2.VideoWriter(video_out_path, codec, fps, (width, height))
 
         pbar = tqdm(total=total, ncols=80)
-        pbar.set_description(f"Making: {os.path.basename(video).rsplit('.', 1)[0] + '_AnimeGANv2.mp4'}")
+        pbar.set_description(f"Making: {video_out_name}")
+
         while True:
             ret, frame = vid.read()
             if not ret:
@@ -82,7 +89,7 @@ def cvt2anime_video(video, output, checkpoint_dir, output_format='mp4v'):  # 小
         pbar.close()
         vid.release()
         video_out.release()
-        return os.path.join(output, vid_name.rsplit('.', 1)[0] + "_AnimeGANv2.mp4")
+        return os.path.join(output, video_out_path)
 
 
 def anime(video_filepath, style):
@@ -90,16 +97,18 @@ def anime(video_filepath, style):
         output = "output"
         check_folder(output) # 空文件夹真烦人
 
-        checkpoint_dir = "checkpoint/generator_Hayao_weight"
+        checkpoint = "Hayao"
         if style == "《起风了》（宫崎骏）":
-            checkpoint_dir = "checkpoint/generator_Hayao_weight"
+            checkpoint = "Hayao"
         elif style == "《红辣椒》（今敏）":
-            checkpoint_dir = "checkpoint/generator_Paprika_weight"
+            checkpoint = "Paprika"
         elif style == "《你的名字》（新海诚）":
-            checkpoint_dir = "checkpoint/generator_Shinkai_weight"
+            checkpoint = "Shinkai"
+
+        checkpoint_dir = os.path.join("checkpoint", "generator_" + checkpoint + "_weight")
 
         try:
-            output_filepath = cvt2anime_video(video_filepath, output, checkpoint_dir)
+            output_filepath = cvt2anime_video(video_filepath, output, checkpoint, checkpoint_dir)
             return output_filepath
         except RuntimeError as error:
             print('Error', error)
@@ -145,5 +154,5 @@ demo = gr.Interface(
 
 if __name__ == "__main__":
     # https://www.gradio.app/guides/setting-up-a-demo-for-maximum-performance
-    # queue方法允许用户通过创建一个队列来控制请求的处理速率，从而实现更好的控制。用户可以设置一次处理的请求数量，并向用户显示他们在队列中的位置。
+    # queue 方法允许用户通过创建一个队列来控制请求的处理速率，从而实现更好的控制。用户可以设置一次处理的请求数量，并向用户显示他们在队列中的位置。
     demo.launch(share=True, show_error=True)
