@@ -38,12 +38,12 @@ def process_image(img, x32=True):
     return img
 
 def post_precess(img, wh):
-    img = (img.squeeze() + 1.) / 2 * 255
+    img = (img.squeeze() + 1.0) / 2 * 255
     img = img.astype(np.uint8)
     img = cv2.resize(img, (wh[0], wh[1]))
     return img
 
-def cvt2anime_video(video_filepath, output, model, onnx = 'model.onnx', output_format='mp4v'):  # 小写就不报错了，只是仍然无法在浏览器上播放
+def cvt2anime_video(video_path, output, model, onnx = 'model.onnx', output_format='mp4v'):  # 小写就不报错了，只是仍然无法在浏览器上播放
 
     # check onnx model
     exists = os.path.isfile(onnx)
@@ -67,42 +67,52 @@ def cvt2anime_video(video_filepath, output, model, onnx = 'model.onnx', output_f
     input_name = session.get_inputs()[0].name
 
     # load video
-    vid = cv2.VideoCapture(video_filepath)
-    vid_name = os.path.basename(video_filepath)  # 只取文件名
+    video_in = cv2.VideoCapture(video_path)
+    video_in_name = os.path.basename(video_path)  # 只取文件名
     # https://blog.csdn.net/lsoxvxe/article/details/131999217
     # https://pythonjishu.com/python-os-28/
-    total = int(vid.get(cv2.CAP_PROP_FRAME_COUNT))
-    fps = vid.get(cv2.CAP_PROP_FPS)
-    width = int(vid.get(cv2.CAP_PROP_FRAME_WIDTH))
-    height = int(vid.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    codec = cv2.VideoWriter_fourcc(*output_format)
+
+    total = int(video_in.get(cv2.CAP_PROP_FRAME_COUNT))
+    fps = int(video_in.get(cv2.CAP_PROP_FPS))
+    width = int(video_in.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height = int(video_in.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    fourcc = cv2.VideoWriter_fourcc(*output_format)
 
     # 输出视频名称、路径
-    video_out_name = vid_name.rsplit('.', 1)[0] + '_' + model + '.mp4'
+    video_out_name = video_in_name.rsplit('.', 1)[0] + '_' + model + '.mp4'
     video_out_path = os.path.join(output, video_out_name)
 
-    video_out = cv2.VideoWriter(video_out_path, codec, fps, (width, height))
+    video_out = cv2.VideoWriter(video_out_path, fourcc, fps, (width, height))
 
     pbar = tqdm(total=total, ncols=80)
     pbar.set_description(f"Making: {video_out_name}")
 
     while True:
-        ret, frame = vid.read()
+        ret, frame = video_in.read()
         if not ret:
             break
-        frame = np.expand_dims(process_image(frame),0)
+        # frame = np.expand_dims(process_image(frame),0)
+        frame = np.asarray(np.expand_dims(process_image(frame), 0))
         fake_img = session.run(None, {input_name : frame})
         fake_img = post_precess(fake_img[0], (width, height))
         video_out.write(cv2.cvtColor(fake_img, cv2.COLOR_BGR2RGB))
         pbar.update(1)
 
     pbar.close()
-    vid.release()
+    video_in.release()
     video_out.release()
+
     return os.path.join(output, video_out_path)
 
 if __name__ == '__main__':
-    # python onnx_video2anime.py --video video/input/お花見.mp4 --output video/output --model Shinkai --onnx pb_and_onnx_model/Shinkai_53.onnx
+    # python onnx_video2anime.py --video video/input/お花見.mp4 --output video/output --model Shinkai --onnx pb_and_onnx_model/Shinkai_53.onnx 新海诚 (v2)
+
+    # v3
+    # python onnx_video2anime.py --video examples/2.mp4 --output output --model JP_face --onnx pb_and_onnx_model/AnimeGANv3_JP_face_v1.0.onnx 日漫脸
+    # python onnx_video2anime.py --video examples/2.mp4 --output output --model PortraitSketch --onnx pb_and_onnx_model/AnimeGANv3_PortraitSketch_25.onnx 素描
+    # 加密
+    # python onnx_video2anime.py --video examples/2.mp4 --output output --model H64 --onnx pb_and_onnx_model/animeganv3_H64_model0.onnx 宫崎骏
+
     arg = parse_args()
     check_folder(arg.output)
     info = cvt2anime_video(arg.video, arg.output, arg.model, arg.onnx)
