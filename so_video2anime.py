@@ -1,16 +1,18 @@
 import argparse
 import os
-import cv2
-from tqdm import tqdm
-import numpy as np
+
 import AnimeGANv3_src
+import cv2
+import numpy as np
+from tqdm import tqdm
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+
 
 def parse_args():
     desc = "Tensorflow implementation of AnimeGANv2"
     parser = argparse.ArgumentParser(description=desc)
-    parser.add_argument('--video', type=str, default='video/input/'+ '2.mp4',
+    parser.add_argument('--video', type=str, default='video/input/' + '2.mp4',
                         help='video file or number for webcam')
     parser.add_argument('--output', type=str, default='video/output/' + 'Paprika',
                         help='output path')
@@ -25,6 +27,7 @@ def check_folder(path):
     if not os.path.exists(path):
         os.makedirs(path)
     return path
+
 
 def cvt2anime_video(video_path, output, style, output_format='mp4v'):  # 小写就不报错了，只是仍然无法在浏览器上播放
     print(video_path, style)
@@ -83,8 +86,8 @@ def cvt2anime_video(video_path, output, style, output_format='mp4v'):  # 小写�
 
     return video_out_path
 
-if __name__ == '__main__':
 
+if __name__ == '__main__':
     # v3
 
     # python so_video2anime.py --video examples/2.mp4 --output output --style AnimeGANv3_Arcane

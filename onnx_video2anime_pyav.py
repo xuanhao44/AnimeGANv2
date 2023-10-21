@@ -1,10 +1,11 @@
 import argparse
 import os
+
+import av
 import cv2
-from tqdm import tqdm
 import numpy as np
 import onnxruntime as ort
-import av
+from tqdm import tqdm
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
@@ -103,7 +104,8 @@ def cvt2anime_video(video_path, output, model, onnx='model.onnx'):
                 # https://www.zhihu.com/question/452884533 VideoCapture 读出来的图片默认是 BGR 格式，所以需要转
                 # 但是这里 frame 可以指定格式，所以后面就不 cvtColor 了。
 
-                frame = np.asarray(np.expand_dims(process_image_alter(frame), 0))  # 修改原来的 process_image 函数，不用转换 cvtColor 了
+                frame = np.asarray(
+                    np.expand_dims(process_image_alter(frame), 0))  # 修改原来的 process_image 函数，不用转换 cvtColor 了
                 fake_img = session.run(None, {session.get_inputs()[0].name: frame})
                 fake_img = post_precess(fake_img[0], (width, height))
 

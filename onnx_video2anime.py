@@ -1,16 +1,18 @@
 import argparse
 import os
+
 import cv2
-from tqdm import tqdm
 import numpy as np
 import onnxruntime as ort
+from tqdm import tqdm
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+
 
 def parse_args():
     desc = "Tensorflow implementation of AnimeGANv2"
     parser = argparse.ArgumentParser(description=desc)
-    parser.add_argument('--video', type=str, default='video/input/'+ '2.mp4',
+    parser.add_argument('--video', type=str, default='video/input/' + '2.mp4',
                         help='video file or number for webcam')
     parser.add_argument('--output', type=str, default='video/output/' + 'Paprika',
                         help='output path')
@@ -28,14 +30,17 @@ def check_folder(path):
         os.makedirs(path)
     return path
 
+
 def process_image(img, x32=True):
     h, w = img.shape[:2]
-    if x32: # resize image to multiple of 32s
+    if x32:  # resize image to multiple of 32s
         def to_32s(x):
-            return 256 if x < 256 else x - x%32
+            return 256 if x < 256 else x - x % 32
+
         img = cv2.resize(img, (to_32s(w), to_32s(h)))
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB).astype(np.float32)/ 127.5 - 1.0
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB).astype(np.float32) / 127.5 - 1.0
     return img
+
 
 def post_precess(img, wh):
     img = (img.squeeze() + 1.0) / 2 * 255
@@ -43,7 +48,8 @@ def post_precess(img, wh):
     img = cv2.resize(img, (wh[0], wh[1]))
     return img
 
-def cvt2anime_video(video_path, output, model, onnx = 'model.onnx', output_format='mp4v'):  # 小写就不报错了，只是仍然无法在浏览器上播放
+
+def cvt2anime_video(video_path, output, model, onnx='model.onnx', output_format='mp4v'):  # 小写就不报错了，只是仍然无法在浏览器上播放
 
     # check onnx model
     exists = os.path.isfile(onnx)
@@ -54,14 +60,14 @@ def cvt2anime_video(video_path, output, model, onnx = 'model.onnx', output_forma
     # 加载模型，若有 GPU, 则用 GPU 推理
     # 参考：https://zhuanlan.zhihu.com/p/645720587
     # 慎入！https://zhuanlan.zhihu.com/p/492040015
-    if ort.get_device()=='GPU':
+    if ort.get_device() == 'GPU':
         print('use gpu')
-        providers = ['CUDAExecutionProvider','CPUExecutionProvider',]
+        providers = ['CUDAExecutionProvider', 'CPUExecutionProvider', ]
         session = ort.InferenceSession(onnx, providers=providers)
-        session.set_providers(['CUDAExecutionProvider'], [ {'device_id': 0}]) #gpu 0
+        session.set_providers(['CUDAExecutionProvider'], [{'device_id': 0}])  # gpu 0
     else:
         print('use cpu')
-        providers = ['CPUExecutionProvider',]
+        providers = ['CPUExecutionProvider', ]
         session = ort.InferenceSession(onnx, providers=providers)
 
     input_name = session.get_inputs()[0].name
@@ -93,7 +99,7 @@ def cvt2anime_video(video_path, output, model, onnx = 'model.onnx', output_forma
             break
         # frame = np.expand_dims(process_image(frame),0)
         frame = np.asarray(np.expand_dims(process_image(frame), 0))
-        fake_img = session.run(None, {input_name : frame})
+        fake_img = session.run(None, {input_name: frame})
         fake_img = post_precess(fake_img[0], (width, height))
         video_out.write(cv2.cvtColor(fake_img, cv2.COLOR_BGR2RGB))
         pbar.update(1)
@@ -114,9 +120,11 @@ def cvt2anime_video(video_path, output, model, onnx = 'model.onnx', output_forma
     # os.system("ffmpeg -an -i tmp.mp4 -vn -i " + video_path + " -c:a copy -c:v copy " + video_out_path + " -y")
 
     # 合成大西瓜！
-    os.system("ffmpeg -an -i tmp.mp4 -vn -i " + video_path + " -c:a copy -c:v copy -vcodec libx264 " + video_out_path + " -y")
+    os.system(
+        "ffmpeg -an -i tmp.mp4 -vn -i " + video_path + " -c:a copy -c:v copy -vcodec libx264 " + video_out_path + " -y")
 
     return video_out_path
+
 
 if __name__ == '__main__':
     # python onnx_video2anime.py --video video/input/お花見.mp4 --output video/output --model Shinkai_53 --onnx pb_and_onnx_model/Shinkai_53.onnx 新海诚 (v2)
