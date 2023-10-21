@@ -4,8 +4,6 @@ import cv2
 from tqdm import tqdm
 import numpy as np
 import onnxruntime as ort
-import pygame  # pip install pygame
-from pygame import mixer
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
