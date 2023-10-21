@@ -36,6 +36,7 @@ def process_image_alter(img, x32=True):
     if x32:  # resize image to multiple of 32s
         def to_32s(x):
             return 256 if x < 256 else x - x % 32
+
         img = cv2.resize(img, (to_32s(w), to_32s(h)))
     img = img.astype(np.float32) / 127.5 - 1.0  # 注意修改
     return img
@@ -49,7 +50,6 @@ def post_precess(img, wh):
 
 
 def cvt2anime_video(video_path, output, model, onnx='model.onnx'):
-
     # check onnx model
     exists = os.path.isfile(onnx)
     if not exists:
@@ -61,35 +61,34 @@ def cvt2anime_video(video_path, output, model, onnx='model.onnx'):
     # 慎入！https://zhuanlan.zhihu.com/p/492040015
     if ort.get_device() == 'GPU':
         print('use gpu')
-        providers = ['CUDAExecutionProvider', 'CPUExecutionProvider',]
+        providers = ['CUDAExecutionProvider', 'CPUExecutionProvider', ]
         session = ort.InferenceSession(onnx, providers=providers)
         session.set_providers(['CUDAExecutionProvider'], [{'device_id': 0}])  # gpu 0
     else:
         print('use cpu')
-        providers = ['CPUExecutionProvider',]
+        providers = ['CPUExecutionProvider', ]
         session = ort.InferenceSession(onnx, providers=providers)
 
-    # 载入视频
-    in_container = av.open(video_path)
     video_in_name = os.path.basename(video_path)  # 只取文件名
-    # https://blog.csdn.net/lsoxvxe/article/details/131999217
-    # https://pythonjishu.com/python-os-28/
-
-    in_stream = in_container.streams.video[0]
-    fps = in_stream.base_rate  # 帧率
-    frame_width = in_stream.width  # 帧宽
-    frame_height = in_stream.height  # 帧高
-    total_time_in_second = in_stream.duration * 1.0 * in_stream.time_base  # 视频总长
-    total_frame = int(total_time_in_second * fps)  # 视频总帧数
-
     # 输出视频名称、路径
     video_out_name = video_in_name.rsplit('.', 1)[0] + '_' + model + '.mp4'
     video_out_path = os.path.join(output, video_out_name)
 
-    out_container = av.open(video_out_path, mode="w")
-    out_stream = out_container.add_stream("h264", rate=fps)
-    out_stream.width = frame_width
-    out_stream.height = frame_height
+    # 载入视频
+    in_container = av.open(video_path, 'r')
+    out_container = av.open(video_out_path, 'w')
+
+    in_video_stream = in_container.streams.video[0]
+    out_video_stream = out_container.add_stream("h264")
+
+    fps = in_video_stream.base_rate  # 帧率
+    width = in_video_stream.width  # 帧宽
+    height = in_video_stream.height  # 帧高
+    total_time_in_second = in_video_stream.duration * 1.0 * in_video_stream.time_base  # 视频总长
+    total_frame = int(total_time_in_second * fps)  # 视频总帧数
+
+    out_video_stream.width = width
+    out_video_stream.height = height
 
     pbar = tqdm(total=total_frame, ncols=80)
     pbar.set_description(f"Making: {video_out_name}")
@@ -101,10 +100,10 @@ def cvt2anime_video(video_path, output, model, onnx='model.onnx'):
 
         frame = np.asarray(np.expand_dims(process_image_alter(frame), 0))  # 修改原来的 process_image 函数，不用转换 cvtColor 了
         fake_img = session.run(None, {session.get_inputs()[0].name: frame})
-        fake_img = post_precess(fake_img[0], (frame_width, frame_height))
+        fake_img = post_precess(fake_img[0], (width, height))
 
         frame = av.VideoFrame.from_ndarray(fake_img, format="rgb24")  # 接收 rgb
-        for packet in out_stream.encode(frame):
+        for packet in out_video_stream.encode(frame):
             out_container.mux(packet)
 
         pbar.update(1)
@@ -112,7 +111,7 @@ def cvt2anime_video(video_path, output, model, onnx='model.onnx'):
     pbar.close()
 
     # Flush stream
-    for packet in out_stream.encode():
+    for packet in out_video_stream.encode():
         out_container.mux(packet)
 
     # Close the file
