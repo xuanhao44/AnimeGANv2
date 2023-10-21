@@ -31,13 +31,13 @@ def check_folder(path):
     return path
 
 
-def process_image(img, x32=True):
+def process_image_alter(img, x32=True):
     h, w = img.shape[:2]
     if x32:  # resize image to multiple of 32s
         def to_32s(x):
             return 256 if x < 256 else x - x % 32
         img = cv2.resize(img, (to_32s(w), to_32s(h)))
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB).astype(np.float32) / 127.5 - 1.0
+    img = img.astype(np.float32) / 127.5 - 1.0  # 注意修改
     return img
 
 
@@ -90,19 +90,20 @@ def cvt2anime_video(video_path, output, model, onnx='model.onnx'):
     out_stream = out_container.add_stream("h264", rate=fps)
     out_stream.width = frame_width
     out_stream.height = frame_height
-    out_stream.pix_fmt = "yuv420p"
 
     pbar = tqdm(total=total_frame, ncols=80)
     pbar.set_description(f"Making: {video_out_name}")
 
     for frame in in_container.decode(video=0):
-        frame = frame.to_ndarray(format="rgb24")
+        frame = frame.to_ndarray(format="rgb24")  # 这里 frame 得到了 rgb 格式
+        # https://www.zhihu.com/question/452884533 VideoCapture 读出来的图片默认是 BGR 格式，所以需要转
+        # 但是这里 frame 可以指定格式，所以后面就不 cvtColor 了。
 
-        frame = np.asarray(np.expand_dims(process_image(frame), 0))
+        frame = np.asarray(np.expand_dims(process_image_alter(frame), 0))  # 修改原来的 process_image 函数，不用转换 cvtColor 了
         fake_img = session.run(None, {session.get_inputs()[0].name: frame})
         fake_img = post_precess(fake_img[0], (frame_width, frame_height))
 
-        frame = av.VideoFrame.from_ndarray(fake_img, format="rgb24")
+        frame = av.VideoFrame.from_ndarray(fake_img, format="rgb24")  # 接收 rgb
         for packet in out_stream.encode(frame):
             out_container.mux(packet)
 
