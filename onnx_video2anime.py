@@ -4,6 +4,8 @@ import cv2
 from tqdm import tqdm
 import numpy as np
 import onnxruntime as ort
+import pygame  # pip install pygame
+from pygame import mixer
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
@@ -82,7 +84,7 @@ def cvt2anime_video(video_path, output, model, onnx = 'model.onnx', output_forma
     video_out_name = video_in_name.rsplit('.', 1)[0] + '_' + model + '.mp4'
     video_out_path = os.path.join(output, video_out_name)
 
-    video_out = cv2.VideoWriter(video_out_path, fourcc, fps, (width, height))
+    video_out = cv2.VideoWriter("tmp.mp4", fourcc, fps, (width, height))
 
     pbar = tqdm(total=total, ncols=80)
     pbar.set_description(f"Making: {video_out_name}")
@@ -101,6 +103,20 @@ def cvt2anime_video(video_path, output, model, onnx = 'model.onnx', output_forma
     pbar.close()
     video_in.release()
     video_out.release()
+
+    # When your video is ready, just run the following command
+    # You can actually just write the command below in your terminal
+
+    # https://snipit.io/public/snippets/43806
+    # os.system("ffmpeg -i Video.mp4 -vcodec libx264 Video2.mp4")
+    # os.system("ffmpeg -i tmp.mp4 -vcodec libx264 " + video_out_path + " -y")
+
+    # https://stackoverflow.com/questions/12938581/ffmpeg-mux-video-and-audio-from-another-video-mapping-issue
+    # ffmpeg -an -i tmp.mp4 -vn -i video_path -c:a copy -c:v copy video_out_path
+    # os.system("ffmpeg -an -i tmp.mp4 -vn -i " + video_path + " -c:a copy -c:v copy " + video_out_path + " -y")
+
+    # 合成大西瓜！
+    os.system("ffmpeg -an -i tmp.mp4 -vn -i " + video_path + " -c:a copy -c:v copy -vcodec libx264 " + video_out_path + " -y")
 
     return video_out_path
 
