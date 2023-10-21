@@ -78,7 +78,7 @@ def cvt2anime_video(video_path, output, model, onnx='model.onnx'):
     in_container = av.open(video_path, 'r')
     out_container = av.open(video_out_path, 'w')
 
-    in_video_stream = in_container.streams.video[0]
+    in_video_stream = next(s for s in in_container.streams if s.type == 'video')
     out_video_stream = out_container.add_stream("h264")
 
     fps = in_video_stream.base_rate  # 帧率
@@ -93,20 +93,20 @@ def cvt2anime_video(video_path, output, model, onnx='model.onnx'):
     pbar = tqdm(total=total_frame, ncols=80)
     pbar.set_description(f"Making: {video_out_name}")
 
-    for frame in in_container.decode(video=0):
-        frame = frame.to_ndarray(format="rgb24")  # 这里 frame 得到了 rgb 格式
-        # https://www.zhihu.com/question/452884533 VideoCapture 读出来的图片默认是 BGR 格式，所以需要转
-        # 但是这里 frame 可以指定格式，所以后面就不 cvtColor 了。
+    for packet in in_container.demux(in_video_stream):
+        for frame in packet.decode():
+            frame = frame.to_ndarray(format="rgb24")  # 这里 frame 得到了 rgb 格式
+            # https://www.zhihu.com/question/452884533 VideoCapture 读出来的图片默认是 BGR 格式，所以需要转
+            # 但是这里 frame 可以指定格式，所以后面就不 cvtColor 了。
 
-        frame = np.asarray(np.expand_dims(process_image_alter(frame), 0))  # 修改原来的 process_image 函数，不用转换 cvtColor 了
-        fake_img = session.run(None, {session.get_inputs()[0].name: frame})
-        fake_img = post_precess(fake_img[0], (width, height))
+            frame = np.asarray(np.expand_dims(process_image_alter(frame), 0))  # 修改原来的 process_image 函数，不用转换 cvtColor 了
+            fake_img = session.run(None, {session.get_inputs()[0].name: frame})
+            fake_img = post_precess(fake_img[0], (width, height))
 
-        frame = av.VideoFrame.from_ndarray(fake_img, format="rgb24")  # 接收 rgb
-        for packet in out_video_stream.encode(frame):
-            out_container.mux(packet)
+            frame = av.VideoFrame.from_ndarray(fake_img, format="rgb24")  # 接收 rgb
+            out_container.mux(out_video_stream.encode(frame))
 
-        pbar.update(1)
+            pbar.update(1)  # bar 跟随 frame
 
     pbar.close()
 
