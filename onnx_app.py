@@ -124,7 +124,7 @@ demo = gr.Interface(
     inputs=[
         gr.Video(source="upload"),
         gr.Dropdown([
-            '《起风了》（宫崎骏）',  # Hayao
+            '《起风了》（宫崎骏）',  # H64_model0
             '素描',  # PortraitSketch_25
             '日漫脸',  # JP_face_v1.0
         ],
