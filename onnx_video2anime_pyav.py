@@ -20,8 +20,6 @@ def parse_args():
                         help='model name')
     parser.add_argument('--onnx', type=str, default='pb_and_onnx_model/Shinkai_53.onnx',
                         help='path of onnx')
-    parser.add_argument('--output_format', type=str, default='mp4v',
-                        help='codec used in VideoWriter when saving video to file')
     return parser.parse_args()
 
 
@@ -79,7 +77,9 @@ def cvt2anime_video(video_path, output, model, onnx='model.onnx'):
     out_container = av.open(video_out_path, 'w')
 
     in_video_stream = next(s for s in in_container.streams if s.type == 'video')
+    in_audio_stream = next(s for s in in_container.streams if s.type == 'audio')
     out_video_stream = out_container.add_stream("h264")
+    out_audio_stream = out_container.add_stream(template=in_audio_stream)
 
     fps = in_video_stream.base_rate  # 帧率
     width = in_video_stream.width  # 帧宽
@@ -93,29 +93,36 @@ def cvt2anime_video(video_path, output, model, onnx='model.onnx'):
     pbar = tqdm(total=total_frame, ncols=80)
     pbar.set_description(f"Making: {video_out_name}")
 
-    for packet in in_container.demux(in_video_stream):
+    for packet in in_container.demux(in_video_stream, in_audio_stream):
+
+        _type = packet.stream.type
+
         for frame in packet.decode():
-            frame = frame.to_ndarray(format="rgb24")  # 这里 frame 得到了 rgb 格式
-            # https://www.zhihu.com/question/452884533 VideoCapture 读出来的图片默认是 BGR 格式，所以需要转
-            # 但是这里 frame 可以指定格式，所以后面就不 cvtColor 了。
+            if _type == 'video':
+                frame = frame.to_ndarray(format="rgb24")  # 这里 frame 得到了 rgb 格式
+                # https://www.zhihu.com/question/452884533 VideoCapture 读出来的图片默认是 BGR 格式，所以需要转
+                # 但是这里 frame 可以指定格式，所以后面就不 cvtColor 了。
 
-            frame = np.asarray(np.expand_dims(process_image_alter(frame), 0))  # 修改原来的 process_image 函数，不用转换 cvtColor 了
-            fake_img = session.run(None, {session.get_inputs()[0].name: frame})
-            fake_img = post_precess(fake_img[0], (width, height))
+                frame = np.asarray(np.expand_dims(process_image_alter(frame), 0))  # 修改原来的 process_image 函数，不用转换 cvtColor 了
+                fake_img = session.run(None, {session.get_inputs()[0].name: frame})
+                fake_img = post_precess(fake_img[0], (width, height))
 
-            frame = av.VideoFrame.from_ndarray(fake_img, format="rgb24")  # 接收 rgb
-            out_container.mux(out_video_stream.encode(frame))
+                frame = av.VideoFrame.from_ndarray(fake_img, format="rgb24")  # 接收 rgb
+                out_container.mux(out_video_stream.encode(frame))
 
-            pbar.update(1)  # bar 跟随 frame
+                pbar.update(1)  # bar 跟随 video frame
+
+            elif _type == 'audio':
+                # We need to skip the "flushing" packets that `demux` generates.
+                if packet.dts is None:
+                    continue
+                # We need to assign the packet to the new stream.
+                packet.stream = out_audio_stream
+                out_container.mux(packet)
 
     pbar.close()
 
-    # Flush stream
-    for packet in out_video_stream.encode():
-        out_container.mux(packet)
-
     # Close the file
-    in_container.close()
     out_container.close()
 
     return video_out_path
