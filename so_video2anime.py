@@ -81,7 +81,7 @@ def cvt2anime_video(video_path, output, style, output_format='mp4v'):  # 小写�
     video_in.release()
     video_out.release()
 
-    return os.path.join(output, video_out_path)
+    return video_out_path
 
 if __name__ == '__main__':
 

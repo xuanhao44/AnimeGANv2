@@ -89,7 +89,7 @@ def cvt2anime_video(video_filepath, output, checkpoint, checkpoint_dir, output_f
         pbar.close()
         vid.release()
         video_out.release()
-        return os.path.join(output, video_out_path)
+        return video_out_path
 
 
 def anime(video_filepath, style):

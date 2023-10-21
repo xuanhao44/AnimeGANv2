@@ -85,8 +85,7 @@ def cvt2anime_video(video_path, output, model, onnx = 'model.onnx', output_forma
     video_in.release()
     video_out.release()
 
-    print("shuchu:" + os.path.join(output, video_out_path))
-    return os.path.join(output, video_out_path)
+    return video_out_path
 
 
 def anime(video_filepath, style):

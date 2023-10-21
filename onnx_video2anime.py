@@ -102,7 +102,7 @@ def cvt2anime_video(video_path, output, model, onnx = 'model.onnx', output_forma
     video_in.release()
     video_out.release()
 
-    return os.path.join(output, video_out_path)
+    return video_out_path
 
 if __name__ == '__main__':
     # python onnx_video2anime.py --video video/input/お花見.mp4 --output video/output --model Shinkai --onnx pb_and_onnx_model/Shinkai_53.onnx 新海诚 (v2)
