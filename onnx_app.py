@@ -90,6 +90,21 @@ def cvt2anime_video(video_path, output, model, onnx='model.onnx', output_format=
     video_in.release()
     video_out.release()
 
+    # When your video is ready, just run the following command
+    # You can actually just write the command below in your terminal
+
+    # https://snipit.io/public/snippets/43806
+    # os.system("ffmpeg -i Video.mp4 -vcodec libx264 Video2.mp4")
+    # os.system("ffmpeg -i tmp.mp4 -vcodec libx264 " + video_out_path + " -y")
+
+    # https://stackoverflow.com/questions/12938581/ffmpeg-mux-video-and-audio-from-another-video-mapping-issue
+    # ffmpeg -an -i tmp.mp4 -vn -i video_path -c:a copy -c:v copy video_out_path
+    # os.system("ffmpeg -an -i tmp.mp4 -vn -i " + video_path + " -c:a copy -c:v copy " + video_out_path + " -y")
+
+    # 合成大西瓜！
+    os.system(
+        "ffmpeg -an -i tmp.mp4 -vn -i " + video_path + " -c:a copy -c:v copy -vcodec libx264 " + video_out_path + " -y")
+
     return video_out_path
 
 
