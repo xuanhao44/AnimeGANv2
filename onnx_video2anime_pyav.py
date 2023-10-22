@@ -85,7 +85,7 @@ def cvt2anime_video(video_path, output, model, onnx='model.onnx'):
     total_frame = int(total_time_in_second * fps)  # 视频总帧数
 
     out_container = av.open(video_out_path, 'w')
-    out_video_stream = out_container.add_stream("h264")
+    out_video_stream = out_container.add_stream("h264", rate=fps)
     out_audio_stream = out_container.add_stream(template=in_audio_stream)
 
     out_video_stream.width = width
