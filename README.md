@@ -1,148 +1,228 @@
-# AnimeGANv2    
+# AnimeGANv2 部署、改进和展示
 
-「Open Source」. The improved version of AnimeGAN.  
-「[Project Page](https://tachibanayoshino.github.io/AnimeGANv2/)」 | Landscape photos/videos to anime   
+主要是学习 <https://github.com/TachibanaYoshino/AnimeGANv2>。学习过程见下面四个文档，是按照时间顺序来的。
 
-### If you like what I'm doing you can tip me on [*patreon*](https://www.patreon.com/Asher_Chan).  
-Photos [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://drive.google.com/file/d/1PbBkmj1EhULvEE8AXr2z84pZ2DQJN4hc/view?usp=sharing)   
-    
-Videos [![Colab for videos](https://colab.research.google.com/assets/colab-badge.svg)](https://drive.google.com/file/d/1qhBxA72Wxbh6Eyhd-V0zY_jTIblP9rHz/view?usp=sharing)    
+## 1 [AnimeGANv2 部署测试](https://www.sheniao.top/tech/189.html)
 
------  
-**News**  
-* (2022.08.03)  Added the AnimeGANv2 [Colab](https://drive.google.com/file/d/1PbBkmj1EhULvEE8AXr2z84pZ2DQJN4hc/view?usp=sharing).    
-* (2021.12.25)  [**AnimeGANv3**](https://github.com/TachibanaYoshino/AnimeGANv3) has been released.:christmas_tree:  
-* (2021.02.21)  [The pytorch version of AnimeGANv2 has been released](https://github.com/bryandlee/animegan2-pytorch), Be grateful to @bryandlee for his contribution. 
-* (2020.12.25)  AnimeGANv3 will be released along with its paper in the spring of 2021.  
-  
+（在 RTX 2080Ti 上，后续都是 RTX A4000）简单部署了 AnimeGANv2。并未做出其他调整。
 
-------
+环境：
 
-**Focus:**  
-<table border="1px ridge">
-	<tr align="center">
-	    <th>Anime style</th>
-	    <th>Film</th>  
-	    <th>Picture Number</th>  
-      <th>Quality</th>
-      <th>Download Style Dataset</th>
-	</tr >
-	<tr align="center">
-      <td>Miyazaki Hayao</td>
-      <td>The Wind Rises</td>
-      <td>1752</td>
-      <td>1080p</td>
-	    <td rowspan="3"><a href="https://github.com/TachibanaYoshino/AnimeGANv2/releases/tag/1.0">Link</a></td>
-	</tr>
-	<tr align="center">
-	    <td>Makoto Shinkai</td>  
-	    <td>Your Name & Weathering with you</td>
-      <td>1445</td>
-      <td>BD</td>
-	</tr>
-	<tr align="center">
-	    <td>Kon Satoshi</td>
-	    <td>Paprika</td>
-      <td>1284</td>
-      <td>BDRip</td>
-	</tr>
-</table>  
-   
-**News:**    
-```yaml
-The improvement directions of AnimeGANv2 mainly include the following 4 points:  
-```  
-- [x] 1. Solve the problem of high-frequency artifacts in the generated image.  
-- [x] 2. It is easy to train and directly achieve the effects in the paper.  
-- [x] 3. Further reduce the number of parameters of the generator network. **(generator size: 8.17 Mb)**, The lite version has a smaller generator model.  
-- [x] 4. Use new high-quality style data, which come from BD movies as much as possible.  
-   
-   &ensp;&ensp;&ensp;&ensp;&ensp;  AnimeGAN can be accessed from [here](https://github.com/TachibanaYoshino/AnimeGAN).  
-___  
+```shell
+conda create --prefix /cloud/animegan python=3.6 -y
+conda activate /cloud/animegan
+pip install --user tensorflow-gpu==1.15.0
+pip install --user opencv-python==4.2.0.32
+pip install --user tqdm
+pip install --user numpy
+pip install --user glob2
+pip install --user argparse
+pip install --user onnxruntime
+conda install --prefix /cloud/animegan cudatoolkit==10.0.130 -y
+conda install --prefix /cloud/animegan cudnn=7.6.0=cuda10.0_0 -y
+```
 
-## Requirements  
-- python 3.6  
-- tensorflow-gpu 1.15.0 (GPU 2080Ti, cuda 10.0.130, cudnn 7.6.0)  
-- opencv  
-- tqdm  
-- numpy  
-- glob  
-- argparse  
-- onnxruntime (If onnx file needs to be run.)  
-  
-## Usage  
-### 1. Inference  
-  > `python test.py  --checkpoint_dir  checkpoint/generator_Hayao_weight  --test_dir dataset/test/HR_photo --save_dir Hayao/HR_photo`  
-    
-### 2. Convert video to anime  
-  > `python video2anime.py  --video video/input/お花見.mp4  --checkpoint_dir  checkpoint/generator_Hayao_weight  --output video/output`  
-    
-### 3. Train 
-#### 1. Download vgg19    
-  > [vgg19.npy](https://github.com/TachibanaYoshino/AnimeGAN/releases/tag/vgg16%2F19.npy)  
+自动化：
 
-#### 2. Download Train/Val Photo dataset  
-  > [Link](https://github.com/TachibanaYoshino/AnimeGAN/releases/tag/dataset-1)  
+```shell
+sudo -i -u featurize bash << EOF
+cp -r ~/work/AnimeGANv2 ~/AnimeGANv2
+EOF
+```
 
-#### 3. Do edge_smooth  
-  > `python edge_smooth.py --dataset Hayao --img_size 256`  
+## 2 [AnimeGANv2 + Gradio 轻量展示](https://www.sheniao.top/tech/191.html)
 
-#### 4. Train  
-  >  `python train.py --dataset Hayao --epoch 101 --init_epoch 10`  
-  
-#### 5. Extract the weights of the generator  
-  >  `python get_generator_ckpt.py --checkpoint_dir  ../checkpoint/AnimeGANv2_Shinkai_lsgan_300_300_1_2_10_1  --style_name Shinkai`  
-  
-____  
-## Results  
-![](https://github.com/TachibanaYoshino/AnimeGANv2/blob/master/AnimeGANv2.png)   
-     
-____ 
-:heart_eyes:  Photo  to  Paprika  Style  
-  
-![](https://github.com/TachibanaYoshino/AnimeGANv2/blob/master/results/Paprika/concat/37.jpg)   
-![](https://github.com/TachibanaYoshino/AnimeGANv2/blob/master/results/Paprika/concat/38.jpg)     
-![](https://github.com/TachibanaYoshino/AnimeGANv2/blob/master/results/Paprika/concat/6.jpg)  
-![](https://github.com/TachibanaYoshino/AnimeGANv2/blob/master/results/Paprika/concat/7.jpg)  
-![](https://github.com/TachibanaYoshino/AnimeGANv2/blob/master/results/Paprika/concat/9.jpg)  
-![](https://github.com/TachibanaYoshino/AnimeGANv2/blob/master/results/Paprika/concat/21.jpg)  
-![](https://github.com/TachibanaYoshino/AnimeGANv2/blob/master/results/Paprika/concat/44.jpg)  
-![](https://github.com/TachibanaYoshino/AnimeGANv2/blob/master/results/Paprika/concat/1.jpg)  
-![](https://github.com/TachibanaYoshino/AnimeGANv2/blob/master/results/Paprika/concat/8.jpg)  
-![](https://github.com/TachibanaYoshino/AnimeGANv2/blob/master/results/Paprika/concat/11.jpg)  
-![](https://github.com/TachibanaYoshino/AnimeGANv2/blob/master/results/Paprika/concat/5.jpg)  
-![](https://github.com/TachibanaYoshino/AnimeGANv2/blob/master/results/Paprika/concat/15.jpg)   
-____  
-:heart_eyes:  Photo  to  Hayao  Style   
-  
-![](https://github.com/TachibanaYoshino/AnimeGANv2/blob/master/results/Hayao/concat/AE86.jpg)   
-![](https://github.com/TachibanaYoshino/AnimeGANv2/blob/master/results/Hayao/concat/10.jpg)     
-![](https://github.com/TachibanaYoshino/AnimeGANv2/blob/master/results/Hayao/concat/15.jpg)  
-![](https://github.com/TachibanaYoshino/AnimeGANv2/blob/master/results/Hayao/concat/35.jpg)  
-![](https://github.com/TachibanaYoshino/AnimeGANv2/blob/master/results/Hayao/concat/39.jpg)  
-![](https://github.com/TachibanaYoshino/AnimeGANv2/blob/master/results/Hayao/concat/42.jpg)  
-![](https://github.com/TachibanaYoshino/AnimeGANv2/blob/master/results/Hayao/concat/44.jpg)  
-![](https://github.com/TachibanaYoshino/AnimeGANv2/blob/master/results/Hayao/concat/41.jpg)  
-![](https://github.com/TachibanaYoshino/AnimeGANv2/blob/master/results/Hayao/concat/32.jpg)  
-![](https://github.com/TachibanaYoshino/AnimeGANv2/blob/master/results/Hayao/concat/11.jpg)  
-![](https://github.com/TachibanaYoshino/AnimeGANv2/blob/master/results/Hayao/concat/34.jpg)   
-![](https://github.com/TachibanaYoshino/AnimeGANv2/blob/master/results/Hayao/concat/18.jpg)    
-____  
-:heart_eyes:  Photo  to  Shinkai  Style   
-![](https://github.com/TachibanaYoshino/AnimeGANv2/blob/master/results/Shinkai/concat/7.jpg)   
-![](https://github.com/TachibanaYoshino/AnimeGANv2/blob/master/results/Shinkai/concat/9.jpg)     
-![](https://github.com/TachibanaYoshino/AnimeGANv2/blob/master/results/Shinkai/concat/11.jpg)  
-![](https://github.com/TachibanaYoshino/AnimeGANv2/blob/master/results/Shinkai/concat/15.jpg)  
-![](https://github.com/TachibanaYoshino/AnimeGANv2/blob/master/results/Shinkai/concat/17.jpg)  
-![](https://github.com/TachibanaYoshino/AnimeGANv2/blob/master/results/Shinkai/concat/22.jpg)  
-![](https://github.com/TachibanaYoshino/AnimeGANv2/blob/master/results/Shinkai/concat/27.jpg)  
-![](https://github.com/TachibanaYoshino/AnimeGANv2/blob/master/results/Shinkai/concat/33.jpg)  
-![](https://github.com/TachibanaYoshino/AnimeGANv2/blob/master/results/Shinkai/concat/32.jpg)  
-![](https://github.com/TachibanaYoshino/AnimeGANv2/blob/master/results/Shinkai/concat/21.jpg)  
-![](https://github.com/TachibanaYoshino/AnimeGANv2/blob/master/results/Shinkai/concat/3.jpg)  
-![](https://github.com/TachibanaYoshino/AnimeGANv2/blob/master/results/Shinkai/concat/26.jpg)  
-  
-## License  
-This repo is made freely available to academic and non-academic entities for non-commercial purposes such as academic research, teaching, scientific publications. Permission is granted to use the AnimeGANv2 given that you agree to my license terms. Regarding the request for commercial use, please contact us via email to help you obtain the  authorization letter.  
-## Author  
-Xin Chen
+尝试使用 Gradio 来展示。在这篇文章中，并未解决输出视频编码的问题——但是之后解决了。
+
+---
+
+换成了 python 3.8，添加了一些包。
+
+```shell
+conda create --prefix /cloud/newanime python=3.8 -y
+conda activate /cloud/newanime
+
+pip install --user opencv-python==4.2.0.32
+pip install --user tqdm
+pip install --user numpy
+pip install --user glob2
+pip install --user argparse
+pip install --user onnxruntime
+
+pip install --user gradio
+pip install --user socksio
+
+conda install --prefix /cloud/newanime cudatoolkit==10.0.130 -y
+conda install --prefix /cloud/newanime cudnn=7.6.0=cuda10.0_0 -y
+
+pip install --user nvidia-pyindex
+pip install --user nvidia-tensorboard==1.15
+pip install --user nvidia-tensorflow
+```
+
+自动化：（这里已经接入了自己克隆的 AnimeGANv2 仓库）
+
+```shell
+cd ~/work/AnimeGANv2
+git pull
+cp -r ~/work/AnimeGANv2 ~/AnimeGANv2
+```
+
+## 3 [AnimeGANv2 onnx 模型调用尝试](https://www.sheniao.top/tech/194.html)
+
+调用作者训练好的 onnx 模型，并尝试也调用 v3 中的模型，并成功。
+
+---
+
+卸载 onnxruntime，安装 onnxruntime-gpu。
+
+```shell
+conda create --prefix /cloud/newanime python=3.8 -y
+conda activate /cloud/newanime
+
+pip install --user opencv-python==4.2.0.32
+pip install --user tqdm
+pip install --user numpy
+pip install --user glob2
+pip install --user argparse
+pip install --user onnxruntime-gpu
+
+pip install --user gradio
+pip install --user socksio
+
+conda install --prefix /cloud/newanime cudatoolkit==10.0.130 -y
+conda install --prefix /cloud/newanime cudnn=7.6.0=cuda10.0_0 -y
+
+pip install --user nvidia-pyindex
+pip install --user nvidia-tensorboard==1.15
+pip install --user nvidia-tensorflow
+```
+
+自动化：（加密的 onnx 模型不在仓库里放出，请自行破解并放到相应目录。这里是把 onnx 模型放到云盘然后复制到相应的位置）
+
+```shell
+sudo -i -u featurize bash << EOF
+cd ~/work/AnimeGANv2
+git pull
+cp -r ~/work/AnimeGANv2 ~/AnimeGANv2
+cp ~/work/AnimeGANv3_H64_model0.onnx ~/AnimeGANv2/pb_and_onnx_model/AnimeGANv3_H64_model0.onnx
+EOF
+```
+
+此外注意修改 onnx 模型名称：AnimeGANv3_H64_model0.onnx，不要小写。
+
+## 4 [为视频转编码以及添加音频](https://www.sheniao.top/tech/197.html)
+
+如标题，解决了第二篇文档中的问题，且附上了原视频音轨。
+
+### 4.1 FFMPEG
+
+```shell
+conda create --prefix /cloud/newanime python=3.8 -y
+conda activate /cloud/newanime
+
+pip install --user opencv-python==4.2.0.32
+pip install --user tqdm
+pip install --user numpy
+pip install --user glob2
+pip install --user argparse
+pip install --user onnxruntime-gpu
+
+pip install --user gradio
+pip install --user socksio
+
+conda install --prefix /cloud/newanime cudatoolkit==10.0.130 -y
+conda install --prefix /cloud/newanime cudnn=7.6.0=cuda10.0_0 -y
+
+pip install --user nvidia-pyindex
+pip install --user nvidia-tensorboard==1.15
+pip install --user nvidia-tensorflow
+```
+
+自动化：需要安装 FFMPEG。
+
+```shell
+sudo -i -u featurize bash << EOF
+cd ~/work/AnimeGANv2
+git pull
+cp -r ~/work/AnimeGANv2 ~/AnimeGANv2
+cp ~/work/AnimeGANv3_H64_model0.onnx ~/AnimeGANv2/pb_and_onnx_model/AnimeGANv3_H64_model0.onnx
+sudo apt update
+sudo apt install ffmpeg -y
+EOF
+```
+
+### 4.2 PyAV
+
+```shell
+conda create --prefix /cloud/newanime python=3.8 -y
+conda activate /cloud/newanime
+
+pip install --user opencv-python==4.2.0.32
+pip install --user tqdm
+pip install --user numpy
+pip install --user glob2
+pip install --user argparse
+pip install --user onnxruntime-gpu
+
+pip install --user gradio
+pip install --user socksio
+
+conda install --prefix /cloud/newanime cudatoolkit==10.0.130 -y
+conda install --prefix /cloud/newanime cudnn=7.6.0=cuda10.0_0 -y
+
+pip install --user nvidia-pyindex
+pip install --user nvidia-tensorboard==1.15
+pip install --user nvidia-tensorflow
+
+pip install --user av
+```
+
+自动化：
+
+```shell
+sudo -i -u featurize bash << EOF
+cd ~/work/AnimeGANv2
+git pull
+cp -r ~/work/AnimeGANv2 ~/AnimeGANv2
+cp ~/work/AnimeGANv3_H64_model0.onnx ~/AnimeGANv2/pb_and_onnx_model/AnimeGANv3_H64_model0.onnx
+EOF
+```
+
+## 环境安装总和（如需要）
+
+- 不适用特定平台。
+- RTX A4000
+
+```shell
+# 软件更新下载
+sudo apt update
+sudo apt install ffmpeg -y
+
+git clone https://github.com/xuanhao44/AnimeGANv2.git
+# 加密 onnx 文件自己放 & 记得改名字
+
+# 环境创建
+conda create -n animeneo python=3.8 -y
+conda activate animeneo
+
+pip install opencv-python==4.2.0.32
+pip install tqdm
+pip install numpy
+pip install glob2
+pip install argparse
+pip install onnxruntime-gpu
+
+pip install gradio
+pip install socksio
+
+conda install cudatoolkit==10.0.130 -y
+conda install cudnn=7.6.0=cuda10.0_0 -y
+
+pip install nvidia-pyindex
+pip install nvidia-tensorboard==1.15
+pip install nvidia-tensorflow
+
+pip install av
+```
+
