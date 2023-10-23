@@ -7,8 +7,6 @@ import numpy as np
 import onnxruntime as ort
 from tqdm import tqdm
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-
 
 def parse_args():
     desc = "Tensorflow implementation of AnimeGANv2"
@@ -62,7 +60,6 @@ def cvt2anime_video(video_path, output, model, onnx='model.onnx'):
         print('use gpu')
         providers = ['CUDAExecutionProvider', 'CPUExecutionProvider', ]
         session = ort.InferenceSession(onnx, providers=providers)
-        session.set_providers(['CUDAExecutionProvider'], [{'device_id': 0}])  # gpu 0
     else:
         print('use cpu')
         providers = ['CPUExecutionProvider', ]

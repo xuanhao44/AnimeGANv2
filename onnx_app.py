@@ -46,31 +46,27 @@ def cvt2anime_video(video_path, output, model, onnx='model.onnx', output_format=
         print('use gpu')
         providers = ['CUDAExecutionProvider', 'CPUExecutionProvider', ]
         session = ort.InferenceSession(onnx, providers=providers)
-        session.set_providers(['CUDAExecutionProvider'], [{'device_id': 0}])  # gpu 0
     else:
         print('use cpu')
         providers = ['CPUExecutionProvider', ]
         session = ort.InferenceSession(onnx, providers=providers)
 
-    input_name = session.get_inputs()[0].name
-
-    # load video
-    video_in = cv2.VideoCapture(video_path)
     video_in_name = os.path.basename(video_path)  # 只取文件名
     # https://blog.csdn.net/lsoxvxe/article/details/131999217
     # https://pythonjishu.com/python-os-28/
+    # 输出视频名称、路径
+    video_out_name = video_in_name.rsplit('.', 1)[0] + '_' + model + '.mp4'
+    video_out_path = os.path.join(output, video_out_name)
 
+    # 载入视频
+    video_in = cv2.VideoCapture(video_path)
     total = int(video_in.get(cv2.CAP_PROP_FRAME_COUNT))
     fps = int(video_in.get(cv2.CAP_PROP_FPS))
     width = int(video_in.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(video_in.get(cv2.CAP_PROP_FRAME_HEIGHT))
     fourcc = cv2.VideoWriter_fourcc(*output_format)
 
-    # 输出视频名称、路径
-    video_out_name = video_in_name.rsplit('.', 1)[0] + '_' + model + '.mp4'
-    video_out_path = os.path.join(output, video_out_name)
-
-    video_out = cv2.VideoWriter(video_out_path, fourcc, fps, (width, height))
+    video_out = cv2.VideoWriter("tmp.mp4", fourcc, fps, (width, height))
 
     pbar = tqdm(total=total, ncols=80)
     pbar.set_description(f"Making: {video_out_name}")
@@ -81,7 +77,7 @@ def cvt2anime_video(video_path, output, model, onnx='model.onnx', output_format=
             break
         # frame = np.expand_dims(process_image(frame),0)
         frame = np.asarray(np.expand_dims(process_image(frame), 0))
-        fake_img = session.run(None, {input_name: frame})
+        fake_img = session.run(None, {session.get_inputs()[0].name: frame})
         fake_img = post_precess(fake_img[0], (width, height))
         video_out.write(cv2.cvtColor(fake_img, cv2.COLOR_BGR2RGB))
         pbar.update(1)
@@ -171,5 +167,5 @@ demo = gr.Interface(
 
 if __name__ == "__main__":
     # https://www.gradio.app/guides/setting-up-a-demo-for-maximum-performance
-    # queue 方法允许用户通过创建一个队列来控制请求的处理速率，从而实现更好的控制。用户可以设置一次处理的请求数量，并向用户显示他们在队列中的位置。
+    # queue 方法允许用户通过创建一个队列来控制请求的处理速率，从而实现更好地控制。用户可以设置一次处理的请求数量，并向用户显示他们在队列中的位置。
     demo.launch(share=True, show_error=True)

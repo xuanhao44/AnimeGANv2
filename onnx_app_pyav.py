@@ -46,7 +46,6 @@ def cvt2anime_video(video_path, output, model, onnx='model.onnx'):
         print('use gpu')
         providers = ['CUDAExecutionProvider', 'CPUExecutionProvider', ]
         session = ort.InferenceSession(onnx, providers=providers)
-        session.set_providers(['CUDAExecutionProvider'], [{'device_id': 0}])  # gpu 0
     else:
         print('use cpu')
         providers = ['CPUExecutionProvider', ]

@@ -6,8 +6,6 @@ import cv2
 import numpy as np
 from tqdm import tqdm
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
-
 
 def parse_args():
     desc = "Tensorflow implementation of AnimeGANv2"
