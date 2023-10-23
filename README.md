@@ -191,7 +191,7 @@ EOF
 
 ## 环境安装总和（如需要）
 
-- 不适用特定平台。
+- 不适用于特定平台。
 - RTX A4000
 
 ```shell
@@ -228,20 +228,20 @@ pip install av
 
 ## 文件说明
 
-- [`app.py`](app.py) 第二篇文章中 Gradio 展示
-- [`onnx_video2anime.py`](onnx_video2anime.py) 第三篇文章中调用 onnx 版本的 video2anime.py，还加上了第四篇文章 1 的编码转换
-- [`onnx_app.py`](onnx_app.py) 第三篇文章中调用 onnx 版本的 app.py，还加上了第四篇文章 1 的编码转换
-- [`so_video2anime.py`](so_video2anime.py) 第三篇文章中调用 so 文件的 video2anime.py
-- [`onnx_video2anime_pyav.py`](onnx_video2anime_pyav.py) 第四篇文章中使用 PyAV 处理视频的 onnx_video2anime.py
-- [`onnx_app_pyav.py`](onnx_app_pyav.py) 第四篇文章中使用 PyAV 处理视频的 onnx_app.py
+- [`app.py`](app.py) 第二篇文章中 Gradio 展示，仍使用 tf + 导入 ckpt的方式，没有编码和音轨的后续处理
+- [`onnx_video2anime.py`](onnx_video2anime.py) 第三篇文章中调用 onnx 版本的 video2anime.py，还加上了第四篇文章 1 的编码和音轨的后续处理
+- [`onnx_app.py`](onnx_app.py) 第三篇文章中调用 onnx 版本的 app.py，还加上了第四篇文章 1 的编码和音轨的后续处理
+- [`so_video2anime.py`](so_video2anime.py) 第三篇文章中调用 so 文件的 video2anime.py，因为 so 本身原因只能使用 CPU
+- [`onnx_video2anime_pyav.py`](onnx_video2anime_pyav.py) 第四篇文章中使用 PyAV 处理视频的 onnx_video2anime.py（即第四篇文章 2 的编码和音轨的后续处理）
+- [`onnx_app_pyav.py`](onnx_app_pyav.py) 第四篇文章中使用 PyAV 处理视频的 onnx_app.py（即第四篇文章 2 的编码和音轨的后续处理）
 
-- [`AnimeGANv3_src.so`](AnimeGANv3_src.so) 从 hugging face 的 v3 仓库中得到的动态链接文件
-- [`AnimeGANv3_bin.so`](AnimeGANv3_bin.so) 从 hugging face 的 v3 仓库中得到的动态链接文件
+- [`AnimeGANv3_src.so`](AnimeGANv3_src.so) 从 hugging face 的 v3 仓库中得到的动态链接文件 <https://huggingface.co/spaces/TachibanaYoshino/AnimeGANv3/tree/main>
+- [`AnimeGANv3_bin.so`](AnimeGANv3_bin.so) 从 hugging face 的 v3 仓库中得到的动态链接文件 <https://huggingface.co/spaces/TachibanaYoshino/AnimeGANv3/tree/main>
 
 - [`pb_and_onnx_model/AnimeGANv3_JP_face_v1.0.onnx`](pb_and_onnx_model/AnimeGANv3_JP_face_v1.0.onnx) 从 GitHub 的 v3 仓库中得到的 onnx 模型
 - [`pb_and_onnx_model/AnimeGANv3_PortraitSketch_25.onnx`](pb_and_onnx_model/AnimeGANv3_PortraitSketch_25.onnx) 从 GitHub 的 v3 仓库中得到的 onnx 模型
-- [`pb_and_onnx_model/AnimeGANv2_Hayao.onnx`](pb_and_onnx_model/AnimeGANv2_Hayao.onnx) 从 hugging face 的 v2 仓库中得到的 onnx 模型 https://huggingface.co/vumichien/AnimeGANv2_Hayao/tree/main
-- [`pb_and_onnx_model/AnimeGANv2_Paprika.onnx`](pb_and_onnx_model/AnimeGANv2_Paprika.onnx) 从 hugging face 的 v2 仓库中得到的 onnx 模型 https://huggingface.co/vumichien/AnimeGANv2_Paprika/tree/main
+- [`pb_and_onnx_model/AnimeGANv2_Hayao.onnx`](pb_and_onnx_model/AnimeGANv2_Hayao.onnx) 从 hugging face 的 v2 仓库中得到的 onnx 模型 <https://huggingface.co/vumichien/AnimeGANv2_Hayao/tree/main>
+- [`pb_and_onnx_model/AnimeGANv2_Paprika.onnx`](pb_and_onnx_model/AnimeGANv2_Paprika.onnx) 从 hugging face 的 v2 仓库中得到的 onnx 模型 <https://huggingface.co/vumichien/AnimeGANv2_Paprika/tree/main>
 
 - [`examples/`](examples) 文件夹，里面存放用于样例输入，也是各类 app.py 读取样例的路径
 
