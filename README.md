@@ -30,6 +30,13 @@ cp -r ~/work/AnimeGANv2 ~/AnimeGANv2
 EOF
 ```
 
+测试：
+
+```shell
+python test.py  --checkpoint_dir  checkpoint/generator_Hayao_weight  --test_dir dataset/test/HR_photo --save_dir Hayao/HR_photo
+python video2anime.py  --video video/input/お花見.mp4  --checkpoint_dir  checkpoint/generator_Hayao_weight  --output video/output
+```
+
 ## 2 [AnimeGANv2 + Gradio 轻量展示](https://www.sheniao.top/tech/191.html)
 
 尝试使用 Gradio 来展示。在这篇文章中，并未解决输出视频编码的问题——但是之后解决了。
@@ -68,6 +75,12 @@ git pull
 cp -r ~/work/AnimeGANv2 ~/AnimeGANv2
 ```
 
+测试：
+
+```shell
+python app.py
+```
+
 ## 3 [AnimeGANv2 onnx 模型调用尝试](https://www.sheniao.top/tech/194.html)
 
 调用作者训练好的 onnx 模型，并尝试也调用 v3 中的模型，并成功。
@@ -75,6 +88,15 @@ cp -r ~/work/AnimeGANv2 ~/AnimeGANv2
 ---
 
 卸载 onnxruntime，安装 onnxruntime-gpu。
+
+---
+
+由于使用了第四篇文章的 1 提到的 FFMPEG，故需要安装。
+
+```shell
+sudo apt update
+sudo apt install ffmpeg -y
+```
 
 ```shell
 conda create --prefix /cloud/newanime python=3.8 -y
@@ -110,6 +132,13 @@ EOF
 ```
 
 此外注意修改 onnx 模型名称：AnimeGANv3_H64_model0.onnx，不要小写。
+
+测试：
+
+```shell
+python onnx_video2anime.py --video examples/2.mp4 --output output --model PortraitSketch_25 --onnx pb_and_onnx_model/AnimeGANv3_PortraitSketch_25.onnx
+python onnx_app.py
+```
 
 ## 4 [为视频转编码以及添加音频](https://www.sheniao.top/tech/197.html)
 
@@ -157,6 +186,8 @@ cp ~/work/AnimeGANv3_H64_model0.onnx ~/AnimeGANv2/pb_and_onnx_model/AnimeGANv3_H
 EOF
 ```
 
+测试略。
+
 ### 4.2 PyAV
 
 ```shell
@@ -192,6 +223,13 @@ git pull
 cp -r ~/work/AnimeGANv2 ~/AnimeGANv2
 cp ~/work/AnimeGANv3_H64_model0.onnx ~/AnimeGANv2/pb_and_onnx_model/AnimeGANv3_H64_model0.onnx
 EOF
+```
+
+测试：
+
+```shell
+python onnx_video2anime_pyav.py --video examples/2.mp4 --output output --model PortraitSketch_25 --onnx pb_and_onnx_model/AnimeGANv3_PortraitSketch_25.onnx
+python onnx_app_pyav.py
 ```
 
 ## 环境安装总和（如需要）
