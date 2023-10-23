@@ -129,6 +129,7 @@ def anime(video_filepath, style):
 
         try:
             output_filepath = cvt2anime_video(video_filepath, output, model, onnx)
+            print(f'output video: {output_filepath}')
             return output_filepath
         except RuntimeError as error:
             print('Error', error)
