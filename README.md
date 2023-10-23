@@ -117,6 +117,13 @@ EOF
 
 ### 4.1 FFMPEG
 
+需要安装 FFMPEG。
+
+```shell
+sudo apt update
+sudo apt install ffmpeg -y
+```
+
 ```shell
 conda create --prefix /cloud/newanime python=3.8 -y
 conda activate /cloud/newanime
@@ -139,7 +146,7 @@ pip install --user nvidia-tensorboard==1.15
 pip install --user nvidia-tensorflow
 ```
 
-自动化：需要安装 FFMPEG。
+自动化：
 
 ```shell
 sudo -i -u featurize bash << EOF
@@ -147,8 +154,6 @@ cd ~/work/AnimeGANv2
 git pull
 cp -r ~/work/AnimeGANv2 ~/AnimeGANv2
 cp ~/work/AnimeGANv3_H64_model0.onnx ~/AnimeGANv2/pb_and_onnx_model/AnimeGANv3_H64_model0.onnx
-sudo apt update
-sudo apt install ffmpeg -y
 EOF
 ```
 
