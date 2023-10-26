@@ -246,7 +246,8 @@ python onnx_app_pyav.py
 
 ## 文件说明
 
-- [`onnx_app_pyav_requirements.txt`](onnx_app_pyav_requirements.txt) 为 `onnx_app_pyav.py` 准备的一部分依赖项安装
+- [`onnx_app_pyav_requirements.txt`](onnx_app_pyav_requirements.txt) 为 `onnx_app_pyav.py` 准备的一部分依赖项安装，在第四篇中提到
+- [`frpc_linux_amd64_v0.2`](frpc_linux_amd64_v0.2) 为 `onnx_app_pyav.py` 准备的内网穿透文件，在第四篇中提到
 
 ---
 
