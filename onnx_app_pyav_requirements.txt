@@ -1,0 +1,6 @@
+av
+opencv-python-headless
+gradio
+numpy
+onnxruntime-gpu
+tqdm
