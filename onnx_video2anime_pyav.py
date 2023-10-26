@@ -134,7 +134,7 @@ if __name__ == '__main__':
     # python onnx_video2anime_pyav.py --video examples/2.mp4 --output output --model JP_face_v1.0 --onnx pb_and_onnx_model/AnimeGANv3_JP_face_v1.0.onnx 日漫脸
     # python onnx_video2anime_pyav.py --video examples/2.mp4 --output output --model PortraitSketch_25 --onnx pb_and_onnx_model/AnimeGANv3_PortraitSketch_25.onnx 素描
     # 加密
-    # python onnx_video2anime_pyav.py --video examples/2.mp4 --output output --model H64_model0 --onnx pb_and_onnx_model/Animeganv3_H64_model0.onnx 宫崎骏
+    # python onnx_video2anime_pyav.py --video examples/2.mp4 --output output --model H64_model0 --onnx pb_and_onnx_model/AnimeGANv3_H64_model0.onnx 宫崎骏
 
     arg = parse_args()
     check_folder(arg.output)
