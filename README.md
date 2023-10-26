@@ -2,6 +2,14 @@
 
 主要是学习 <https://github.com/TachibanaYoshino/AnimeGANv2>。学习过程见下面四个文档，是按照时间顺序来的。
 
+- 1 [AnimeGANv2 部署测试](https://www.sheniao.top/tech/189.html)
+- 2 [AnimeGANv2 + Gradio 轻量展示](https://www.sheniao.top/tech/191.html)
+- 3 [AnimeGANv2 onnx 模型调用尝试](https://www.sheniao.top/tech/194.html)
+- 4 [为视频转编码以及添加音频](https://www.sheniao.top/tech/197.html)
+- 5 [AnimeGANv2 后日谈](https://www.sheniao.top/tech/200.html)
+
+部署最终的程序请参考第五个文档。
+
 ## 1 [AnimeGANv2 部署测试](https://www.sheniao.top/tech/189.html)
 
 （在 RTX 2080Ti 上，后续都是 RTX A4000）简单部署了 AnimeGANv2。并未做出其他调整。
@@ -87,7 +95,7 @@ python app.py
 
 ---
 
-卸载 onnxruntime，安装 onnxruntime-gpu。
+卸载 `onnxruntime`，安装 `onnxruntime-gpu`。
 
 ---
 
@@ -232,44 +240,15 @@ python onnx_video2anime_pyav.py --video examples/2.mp4 --output output --model P
 python onnx_app_pyav.py
 ```
 
-## 环境安装总和（如需要）
+## 5 [AnimeGANv2 后日谈](https://www.sheniao.top/tech/200.html)
 
-- 不适用于特定平台。
-- RTX A4000
-
-```shell
-# 软件更新下载
-sudo apt update
-sudo apt install ffmpeg -y
-
-git clone https://github.com/xuanhao44/AnimeGANv2.git
-# 加密 onnx 文件自己放 & 记得改名字
-
-# 环境创建
-conda create -n animeneo python=3.8 -y
-conda activate animeneo
-
-pip install opencv-python==4.2.0.32
-pip install tqdm
-pip install numpy
-pip install glob2
-pip install argparse
-pip install onnxruntime-gpu
-
-pip install gradio
-pip install socksio
-
-conda install cudatoolkit==10.0.130 -y
-conda install cudnn=7.6.0=cuda10.0_0 -y
-
-pip install nvidia-pyindex
-pip install nvidia-tensorboard==1.15
-pip install nvidia-tensorflow
-
-pip install av
-```
+本文重点是提供了一次完整的，在其他平台运行本项目的实践。可以和第一篇文章对比，发现部署的进步！
 
 ## 文件说明
+
+- [`onnx_app_pyav_requirements.txt`](onnx_app_pyav_requirements.txt) 为 `onnx_app_pyav.py` 准备的一部分依赖项安装
+
+---
 
 - [`app.py`](app.py) 第二篇文章中 Gradio 展示，仍使用 tf + 导入 ckpt 的方式，没有编码和音轨的后续处理
 - [`onnx_video2anime.py`](onnx_video2anime.py) 第三篇文章中调用 onnx 版本的 `video2anime.py`，还加上了第四篇文章 1 的编码和音轨的后续处理
@@ -278,9 +257,13 @@ pip install av
 - [`onnx_video2anime_pyav.py`](onnx_video2anime_pyav.py) 第四篇文章中使用 PyAV 处理视频的 `onnx_video2anime.py`（即第四篇文章 2 的编码和音轨的后续处理）
 - [`onnx_app_pyav.py`](onnx_app_pyav.py) 第四篇文章中使用 PyAV 处理视频的 `onnx_app.py`（即第四篇文章 2 的编码和音轨的后续处理）
 
+---
+
 - 从 hugging face 的 v3 仓库中得到的动态链接文件 <https://huggingface.co/spaces/TachibanaYoshino/AnimeGANv3/>
   - [`AnimeGANv3_src.so`](AnimeGANv3_src.so)
   - [`AnimeGANv3_bin.so`](AnimeGANv3_bin.so)
+
+---
 
 - 从 GitHub 的 v3 仓库中得到的 onnx 模型 <https://github.com/TachibanaYoshino/AnimeGANv3>
   - [`pb_and_onnx_model/AnimeGANv3_JP_face_v1.0.onnx`](pb_and_onnx_model/AnimeGANv3_JP_face_v1.0.onnx)
@@ -288,6 +271,8 @@ pip install av
 - 从 hugging face 的 v2 仓库中得到的 onnx 模型
   - [`pb_and_onnx_model/AnimeGANv2_Hayao.onnx`](pb_and_onnx_model/AnimeGANv2_Hayao.onnx) <https://huggingface.co/vumichien/AnimeGANv2_Hayao/>
   - [`pb_and_onnx_model/AnimeGANv2_Paprika.onnx`](pb_and_onnx_model/AnimeGANv2_Paprika.onnx) <https://huggingface.co/vumichien/AnimeGANv2_Paprika/>
+
+---
 
 - [`examples/`](examples) 文件夹，里面存放用于样例输入，也是各类 `app.py` 读取样例的路径
 
